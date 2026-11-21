@@ -24,6 +24,14 @@ export class RegisterDto {
   @IsString()
   @MinLength(8)
   password: string;
+
+  @ApiProperty({
+    description: 'The employee ID of the user',
+    example: '1234567890',
+  })
+  @IsString()
+  @IsNotEmpty()
+  employeeId: string;
 }
 
 export class LoginDto {

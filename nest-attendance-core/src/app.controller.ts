@@ -37,6 +37,6 @@ export class AppController {
     if (!user) {
       throw new UnauthorizedException('User not authenticated');
     }
-    return this.appService.createAttendance(user.id, user.email, body);
+    return this.appService.createAttendance(user.id, user.email, user.employeeId, body);
   }
 }

@@ -8,13 +8,14 @@ import jwt from 'jsonwebtoken';
 
 export type AuthenticatedRequest = {
   headers: { authorization?: string | string[] };
-  user?: { id: string; email: string; role: string };
+  user?: { id: string; email: string; role: string; employeeId: string };
 };
 
 type AccessTokenPayload = {
   sub: string;
   email: string;
   role: string;
+  employeeId: string;
 };
 
 const ACCESS_TOKEN_TTL = '15m';
@@ -36,7 +37,7 @@ export class AuthMiddleware implements NestMiddleware {
       throw new UnauthorizedException('Invalid token');
     }
 
-    req.user = { id: decoded.sub, email: decoded.email, role: decoded.role };
+    req.user = { id: decoded.sub, email: decoded.email, role: decoded.role, employeeId: decoded.employeeId };
     next();
   }
 }
@@ -63,7 +64,8 @@ function verify(token: string, secret: string): AccessTokenPayload {
     typeof decoded === 'string' ||
     typeof decoded.sub !== 'string' ||
     typeof decoded.email !== 'string' ||
-    typeof decoded.role !== 'string'
+    typeof decoded.role !== 'string' ||
+    typeof decoded.employeeId !== 'string'
   ) {
     throw new Error('Invalid token payload');
   }
@@ -72,5 +74,6 @@ function verify(token: string, secret: string): AccessTokenPayload {
     sub: decoded.sub,
     email: decoded.email,
     role: decoded.role,
+    employeeId: decoded.employeeId,
   };
 }

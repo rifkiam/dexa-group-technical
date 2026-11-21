@@ -46,12 +46,13 @@ export class AppService {
     return attendance;
   }
 
-  async createAttendance(userId: string, email: string, payload: CreateAttendanceDto) {
+  async createAttendance(userId: string, email: string, employeeId: string, payload: CreateAttendanceDto) {
     const date = new Date();
     const attendance = await this.prisma.attendance.create({
       data: {
         userId,
         email,
+        employeeId,
         imageKey: payload.imageKey,
         createdAt: date,
       },

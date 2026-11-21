@@ -20,6 +20,7 @@ type PublicUser = {
   name: string;
   email: string;
   role: string;
+  employeeId: string;
 };
 
 type Account = PublicUser & {
@@ -41,6 +42,7 @@ export class AppService {
         data: {
           name: body.name,
           email,
+          employeeId: body.employeeId,
           password: await hashPassword(body.password),
         },
       });
@@ -145,6 +147,7 @@ export class AppService {
           sub: user.id,
           email: user.email,
           role: user.role,
+          employeeId: user.employeeId,
         },
         this.secret(),
       ),
@@ -163,6 +166,7 @@ export class AppService {
       name: user.name,
       email: user.email,
       role: user.role,
+      employeeId: user.employeeId,
     };
   }
 

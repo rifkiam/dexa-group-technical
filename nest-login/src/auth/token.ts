@@ -7,6 +7,7 @@ export type AccessTokenPayload = {
   sub: string;
   email: string;
   role: string;
+  employeeId: string;
 };
 
 export function signAccessToken(
@@ -25,7 +26,8 @@ export function verifyAccessToken(
     typeof decoded === 'string' ||
     typeof decoded.sub !== 'string' ||
     typeof decoded.email !== 'string' ||
-    typeof decoded.role !== 'string'
+    typeof decoded.role !== 'string' ||
+    typeof decoded.employeeId !== 'string'
   ) {
     throw new Error('Invalid token payload');
   }
@@ -34,5 +36,6 @@ export function verifyAccessToken(
     sub: decoded.sub,
     email: decoded.email,
     role: decoded.role,
+    employeeId: decoded.employeeId,
   };
 }

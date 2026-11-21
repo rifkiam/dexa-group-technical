@@ -6,7 +6,7 @@ import {
 const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true';
 
 export const s3 = new S3Client({
-    endpoint: process.env.S3_ENDPOINT ?? '',
+    endpoint: process.env.S3_PUBLIC_URL ?? '',
     region: process.env.S3_REGION ?? '',
     credentials: {
       accessKeyId: process.env.S3_ACCESS_KEY_ID ?? '',
