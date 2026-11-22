@@ -5,7 +5,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({ bodyLimit: 7 * 1024 * 1024 }),
+  );
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.enableShutdownHooks();
   app.setGlobalPrefix('api');

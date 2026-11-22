@@ -3,13 +3,28 @@ import {
   NestMiddleware,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { IncomingMessage } from 'node:http';
 import { ConfigService } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 
+export type AuthenticatedUser = {
+  id: string;
+  email: string;
+  role: string;
+  employeeId: string;
+};
+
 export type AuthenticatedRequest = {
   headers: { authorization?: string | string[] };
-  user?: { id: string; email: string; role: string; employeeId: string };
+  user?: AuthenticatedUser;
+  raw?: IncomingMessage & { user?: AuthenticatedUser };
 };
+
+type AuthMiddlewareRequest = IncomingMessage & { user?: AuthenticatedUser };
+
+export function getAuthenticatedUser(request: AuthenticatedRequest) {
+  return request.user ?? request.raw?.user;
+}
 
 type AccessTokenPayload = {
   sub: string;
@@ -24,7 +39,7 @@ const ACCESS_TOKEN_TTL = '15m';
 export class AuthMiddleware implements NestMiddleware {
   constructor(private readonly config: ConfigService) {}
 
-  use(req: AuthenticatedRequest, _res: unknown, next: () => void) {
+  use(req: AuthMiddlewareRequest, _res: unknown, next: () => void) {
     const token = readBearer(req.headers.authorization);
     if (!token) {
       throw new UnauthorizedException('No token provided');

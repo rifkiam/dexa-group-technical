@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { PrismaService } from './database/prisma.service.js';
 import { CreateAttendanceDto } from './dto/attendance.dto.js';
+import { uploadObject } from './lib/s3.js';
 
 type Pagination = {
   page: number;
@@ -10,6 +12,31 @@ type Pagination = {
 @Injectable()
 export class AppService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async uploadAttendancePhoto(
+    userId: string,
+    payload: { contentType?: string; data?: string },
+  ) {
+    const contentType = payload.contentType;
+    if (!contentType || !['image/jpeg', 'image/png', 'image/webp'].includes(contentType)) {
+      throw new BadRequestException('Photo must be a JPEG, PNG, or WebP image');
+    }
+
+    const encoded = payload.data;
+    if (!encoded || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) {
+      throw new BadRequestException('Photo data is invalid');
+    }
+
+    const image = Buffer.from(encoded, 'base64');
+    if (image.length === 0 || image.length > 5 * 1024 * 1024) {
+      throw new BadRequestException('Photo must be smaller than 5 MB');
+    }
+
+    const extension = contentType.split('/')[1].replace('jpeg', 'jpg');
+    const imageKey = `attendance/${userId}/${randomUUID()}.${extension}`;
+    await uploadObject(imageKey, image, contentType);
+    return { imageKey };
+  }
 
   async getAttendanceList(pagination?: Pagination) {
     const { page = 1, limit = 10 } = pagination ?? {};

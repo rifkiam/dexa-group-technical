@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { AuthenticatedRequest } from './auth.middleware.js';
+import { getAuthenticatedUser, type AuthenticatedRequest } from './auth.middleware.js';
 import { ROLES_KEY } from './roles.decorator.js';
 import type { Role } from './roles.js';
 
@@ -24,11 +24,12 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    if (!request.user) {
+    const user = getAuthenticatedUser(request);
+    if (!user) {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    if (!roles.includes(request.user.role as Role)) {
+    if (!roles.includes(user.role as Role)) {
       throw new ForbiddenException('Insufficient role');
     }
 

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, 
 import { AppService } from './app.service.js';
 import { CreateAttendanceDto, PaginationDto } from './dto/attendance.dto.js';
 import { AuthGuard } from './auth/auth.guard.js';
-import type { AuthenticatedRequest } from './auth/auth.middleware.js';
+import { getAuthenticatedUser, type AuthenticatedRequest } from './auth/auth.middleware.js';
 import { Roles } from './auth/roles.decorator.js';
 import { RolesGuard } from './auth/roles.guard.js';
 import { Role } from './auth/roles.js';
@@ -33,10 +33,23 @@ export class AppController {
   @Post('attendance')
   @UseGuards(AuthGuard)
   createAttendance(@Req() req: AuthenticatedRequest, @Body() body: CreateAttendanceDto) {
-    const user = req.user;
+    const user = getAuthenticatedUser(req);
     if (!user) {
       throw new UnauthorizedException('User not authenticated');
     }
     return this.appService.createAttendance(user.id, user.email, user.employeeId, body);
+  }
+
+  @Post('attendance/photo')
+  @UseGuards(AuthGuard)
+  uploadAttendancePhoto(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: { contentType?: string; data?: string },
+  ) {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    return this.appService.uploadAttendancePhoto(user.id, body);
   }
 }
