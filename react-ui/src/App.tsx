@@ -10,10 +10,9 @@ import LoginPage from "./pages/login";
 import AttendancePage from "./pages/attendance";
 import MonitoringPage from "./pages/monitoring";
 import HomePage from "./pages/home";
-import { CookiesProvider } from "react-cookie";
+import { CookiesProvider, useCookies } from "react-cookie";
 import Navbar from "./components/Navbar";
 import { Toaster } from "sonner";
-import { useCookies } from "react-cookie";
 import { decodeAccessToken } from "./lib/jwt";
 
 export default function App() {
@@ -39,12 +38,13 @@ function Shell() {
           path="/"
           element={<HomePage />}
         />
-        <Route
-          path="/login"
-          element={<LoginPage />}
-        />
+        <Route element={<RequireGuest />}>
+          <Route path="/login" element={<LoginPage />} />
+        </Route>
         <Route element={<RequireAuth />}>
-          <Route path="/attendance" element={<AttendancePage />} />
+          <Route element={<RequireEmployee />}>
+            <Route path="/attendance" element={<AttendancePage />} />
+          </Route>
           <Route element={<RequireAdmin />}>
             <Route path="/monitoring" element={<MonitoringPage />} />
           </Route>
@@ -55,11 +55,33 @@ function Shell() {
 }
 
 function RequireAuth() {
-  const [cookies] = useCookies(['token', 'refreshToken']);
+  const [cookies] = useCookies(['token']);
   const user = decodeAccessToken(cookies.token);
 
-  if (!cookies.token || !cookies.refreshToken || !user) {
+  if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function RequireGuest() {
+  const [cookies] = useCookies(['token']);
+  const user = decodeAccessToken(cookies.token);
+
+  if (user) {
+    return <Navigate to={user.role === 'admin' ? '/monitoring' : '/attendance'} replace />;
+  }
+
+  return <Outlet />;
+}
+
+function RequireEmployee() {
+  const [cookies] = useCookies(['token']);
+  const user = decodeAccessToken(cookies.token);
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/monitoring" replace />;
   }
 
   return <Outlet />;

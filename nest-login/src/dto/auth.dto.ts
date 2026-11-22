@@ -50,13 +50,3 @@ export class LoginDto {
   @IsNotEmpty()
   password: string;
 }
-
-export class RefreshTokenDto {
-  @ApiProperty({
-    description: 'The refresh token of the user',
-    example: 'refreshToken',
-  })
-  @IsString()
-  @IsNotEmpty()
-  refreshToken: string;
-}

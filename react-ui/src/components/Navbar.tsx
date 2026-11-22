@@ -3,29 +3,20 @@ import { useCookies } from 'react-cookie';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { decodeAccessToken } from '../lib/jwt';
-import { logout } from '../api/api';
 
 interface NavbarProps {
     title: string;
 }
 
 export default function Navbar({ title }: NavbarProps) {
-    const [cookies, , removeCookies] = useCookies(['token', 'refreshToken']);
-    const token = cookies.token;
-    const refreshToken = cookies.refreshToken;
-    const user = decodeAccessToken(token);
+    const [cookies, , removeCookie] = useCookies(['token']);
+    const user = decodeAccessToken(cookies.token);
     const navigate = useNavigate();
 
-    async function handleLogout() {
-        const res = await logout(refreshToken);
-        if (res.statusCode !== 200 || !res.data) {
-            toast.error(res.message);
-        } else {
-            toast.success('Logged out successfully');
-            removeCookies('token');
-            removeCookies('refreshToken');
-            navigate('/login');
-        }
+    function handleLogout() {
+        removeCookie('token', { path: '/' });
+        toast.success('Logged out successfully');
+        navigate('/login', { replace: true });
     }
 
     return (

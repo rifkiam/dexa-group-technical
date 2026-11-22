@@ -9,6 +9,5 @@ export type User = {
 export type AuthResponse = {
     user: User;
     accessToken: string;
-    refreshToken: string;
     expiresIn: number;
 }

@@ -7,7 +7,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { AppService } from './app.service.js';
-import { RegisterDto, LoginDto, RefreshTokenDto } from './dto/auth.dto.js';
+import { RegisterDto, LoginDto } from './dto/auth.dto.js';
 
 @Controller()
 export class AppController {
@@ -27,17 +27,5 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   login(@Body() body: LoginDto) {
     return this.appService.login(body);
-  }
-
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  refresh(@Body() body: RefreshTokenDto) {
-    return this.appService.refresh(body.refreshToken);
-  }
-
-  @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  logout(@Body() body: RefreshTokenDto) {
-    return this.appService.logout(body.refreshToken);
   }
 }

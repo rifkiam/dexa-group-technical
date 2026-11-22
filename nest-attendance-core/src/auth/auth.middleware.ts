@@ -33,7 +33,7 @@ type AccessTokenPayload = {
   employeeId: string;
 };
 
-const ACCESS_TOKEN_TTL = '15m';
+const ACCESS_TOKEN_TTL = '8h';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {

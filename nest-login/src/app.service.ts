@@ -6,11 +6,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from './generated/prisma/client.js';
 import { hashPassword, verifyPassword } from './auth/password.js';
-import {
-  createRefreshToken,
-  hashRefreshToken,
-  REFRESH_TOKEN_TTL_MS,
-} from './auth/refresh-token.js';
 import { ACCESS_TOKEN_TTL_SECONDS, signAccessToken } from './auth/token.js';
 import { PrismaService } from './database/prisma.service.js';
 import { LoginDto, RegisterDto } from './dto/auth.dto.js';
@@ -76,70 +71,11 @@ export class AppService {
     return this.authenticated(user);
   }
 
-  async refresh(refreshToken: string) {
-    const existing = await this.prisma.refreshToken.findUnique({
-      where: { tokenHash: hashRefreshToken(refreshToken) },
-      include: { user: true },
-    });
-    if (!existing) {
-      throw new UnauthorizedException('Invalid token');
-    }
-
-    const nextRefreshToken = createRefreshToken();
-    await this.prisma.$transaction(async (tx) => {
-      const rotated = await tx.refreshToken.updateMany({
-        where: {
-          id: existing.id,
-          revokedAt: null,
-          expiresAt: { gt: new Date() },
-        },
-        data: { revokedAt: new Date() },
-      });
-      if (rotated.count !== 1) {
-        throw new UnauthorizedException('Invalid token');
-      }
-
-      await tx.refreshToken.create({
-        data: {
-          userId: existing.user.id,
-          tokenHash: hashRefreshToken(nextRefreshToken),
-          expiresAt: this.refreshExpiry(),
-        },
-      });
-    });
-
-    return this.session(existing.user, nextRefreshToken);
+  private authenticated(user: Account) {
+    return this.session(user);
   }
 
-  async logout(refreshToken: string) {
-    const revoked = await this.prisma.refreshToken.updateMany({
-      where: {
-        tokenHash: hashRefreshToken(refreshToken),
-        revokedAt: null,
-        expiresAt: { gt: new Date() },
-      },
-      data: { revokedAt: new Date() },
-    });
-    if (revoked.count !== 1) {
-      throw new UnauthorizedException('Invalid token');
-    }
-
-    return { message: 'Logged out' };
-  }
-
-  private async authenticated(user: Account) {
-    const refreshToken = createRefreshToken();
-    await this.prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        tokenHash: hashRefreshToken(refreshToken),
-        expiresAt: this.refreshExpiry(),
-      },
-    });
-    return this.session(user, refreshToken);
-  }
-
-  private session(user: PublicUser, refreshToken: string) {
+  private session(user: PublicUser) {
     return {
       user: this.toPublicUser(user),
       accessToken: signAccessToken(
@@ -151,13 +87,8 @@ export class AppService {
         },
         this.secret(),
       ),
-      refreshToken,
       expiresIn: ACCESS_TOKEN_TTL_SECONDS,
     };
-  }
-
-  private refreshExpiry(): Date {
-    return new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
   }
 
   private toPublicUser(user: PublicUser): PublicUser {

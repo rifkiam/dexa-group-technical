@@ -6,7 +6,7 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router";
 
 export default function LoginPage() {
-  const [cookies, setCookie] = useCookies(['token', 'refreshToken']);
+  const [, setCookie] = useCookies(['token']);
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
@@ -19,10 +19,12 @@ export default function LoginPage() {
     if (res.statusCode !== 200 || !res.data) {
       toast.error(res.message);
     } else {
-      setCookie('token', res.data.accessToken, { path: '/' });
-      setCookie('refreshToken', res.data.refreshToken, { path: '/' });
+      setCookie('token', res.data.accessToken, {
+        path: '/',
+        sameSite: 'lax',
+        maxAge: res.data.expiresIn,
+      });
       toast.success('Logged in successfully');
-      console.log(cookies);
 
       if (res.data.user.role === 'admin') {
         navigate('/monitoring');

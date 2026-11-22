@@ -51,16 +51,6 @@ export async function register(name: string, email: string, password: string, em
 
 
 
-export async function logout(refreshToken: string) {
-    const res = await authApi.Post<Response<{ message: string }>>(
-        '/logout',
-        {
-            refreshToken,
-        }
-    );
-    return res;
-}
-
 async function attendanceRequest<T>(path: string, token: string, body: unknown): Promise<Response<T>> {
     if (!API_URL) throw new Error('Attendance API URL is not configured');
     const response = await fetch(`${API_URL.replace(/\/$/, '')}${path}`, {

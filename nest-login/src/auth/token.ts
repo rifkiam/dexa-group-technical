@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
-export const ACCESS_TOKEN_TTL = '15m';
-export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
+export const ACCESS_TOKEN_TTL = '8h';
+export const ACCESS_TOKEN_TTL_SECONDS = 8 * 60 * 60;
 
 export type AccessTokenPayload = {
   sub: string;

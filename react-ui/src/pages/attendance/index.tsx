@@ -113,7 +113,8 @@ export default function AttendancePage() {
       setUploadState("idle");
       return;
     }
-    if (!cookies.token) {
+    const token = cookies.token;
+    if (!token) {
       setUploadState("error");
       setUploadError("Your session has expired. Sign in again before uploading.");
       return;
@@ -125,7 +126,7 @@ export default function AttendancePage() {
     }
 
     setUploadState("uploading");
-    const uploadPromise = uploadAttendancePhoto(file, cookies.token)
+    const uploadPromise = uploadAttendancePhoto(file, token)
       .then(({ imageKey }) => {
         if (generation === uploadGenerationRef.current) setUploadState("uploaded");
         return imageKey;
@@ -162,7 +163,8 @@ export default function AttendancePage() {
       toast.error("Capture or choose a photo before submitting attendance.");
       return;
     }
-    if (!cookies.token) {
+    const token = cookies.token;
+    if (!token) {
       toast.error("Your session has expired. Sign in again.");
       return;
     }
@@ -171,7 +173,7 @@ export default function AttendancePage() {
     try {
       const imageKey = await uploadPromiseRef.current;
       if (!imageKey) throw new Error(uploadError ?? "Photo upload has not completed.");
-      await createAttendance(imageKey, cookies.token);
+      await createAttendance(imageKey, token);
       toast.success("Attendance submitted successfully.");
       setSelectedPhoto(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -243,7 +245,7 @@ export default function AttendancePage() {
           />
           <p className="text-sm text-gray-600 underline cursor-pointer" onClick={() => fileInputRef.current?.click()}>or choose an image file</p>
 
-          {uploadState === "error" && photo && cookies.token && (
+          {uploadState === "error" && photo && (
             <Button type="button" variant="secondary" onClick={() => setSelectedPhoto(photo)}>
               Retry photo upload
             </Button>
