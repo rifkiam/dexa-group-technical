@@ -32,6 +32,7 @@ export default function Navbar({ title }: NavbarProps) {
                     {user ? (
                         <>
                             {user.role === 'admin' && <Link to="/monitoring" className="rounded-md px-4 py-2 font-medium hover:bg-[#282931]">Dashboard</Link>}
+                            {user.role === 'admin' && <Link to="/users" className="rounded-md px-4 py-2 font-medium hover:bg-[#282931]">Users</Link>}
                             <Button variant="secondary" className="hover:cursor-pointer" onClick={handleLogout}>Logout</Button>
                         </>
                     ) : <Link to="/login" className="rounded-md px-4 py-2 font-semibold hover:bg-gray-100">Login</Link>}
@@ -52,6 +53,7 @@ export default function Navbar({ title }: NavbarProps) {
                     {user ? (
                         <>
                             {user.role === 'admin' && <Link to="/monitoring" onClick={() => setMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-gray-100">Dashboard</Link>}
+                            {user.role === 'admin' && <Link to="/users" onClick={() => setMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-gray-100">Manage users</Link>}
                             <Button variant="secondary" className="w-full" onClick={handleLogout}>Logout</Button>
                         </>
                     ) : <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-gray-100">Login</Link>}

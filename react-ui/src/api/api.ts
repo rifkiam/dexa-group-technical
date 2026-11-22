@@ -1,6 +1,6 @@
-import { createAlova } from 'alova';
+import { createAlova, invalidateCache } from 'alova';
 import adapterFetch from 'alova/fetch';
-import type { Attendance, AttendanceListResponse, AuthResponse } from '../types/types';
+import type { Attendance, AttendanceListResponse, AuthResponse, ManagedUser, UserFormData } from '../types/types';
 
 const API_URL = import.meta.env.VITE_ATTENDANCE_API_URL;
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL;
@@ -108,5 +108,46 @@ export async function getTodaysAttendance(token: string) {
         headers: { Authorization: `Bearer ${token}` },
     });
 
+    return res;
+}
+
+function usersListRequest(token: string) {
+    return authApi.Get<Response<ManagedUser[]>>('/users', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+async function invalidateUsersList(token: string) {
+    await invalidateCache(usersListRequest(token));
+}
+
+export async function getUsers(token: string) {
+    const res = await usersListRequest(token);
+    return res;
+}
+
+export async function createUser(body: UserFormData, token: string) {
+    const res = await authApi.Post<Response<ManagedUser>>('/users', body, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.statusCode >= 200 && res.statusCode < 300) await invalidateUsersList(token);
+    return res;
+}
+
+export async function updateUser(id: string, body: Partial<UserFormData>, token: string) {
+    const res = await authApi.Put<Response<ManagedUser>>(`/users/${encodeURIComponent(id)}`, body, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.statusCode >= 200 && res.statusCode < 300) await invalidateUsersList(token);
+    return res;
+}
+
+export async function deleteUser(id: string, token: string) {
+    const res = await authApi.Delete<Response<{ id: string }>>(
+        `/users/${encodeURIComponent(id)}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.statusCode >= 200 && res.statusCode < 300) await invalidateUsersList(token);
     return res;
 }

@@ -11,6 +11,7 @@ import AttendancePage from "./pages/attendance";
 import MonitoringPage from "./pages/monitoring";
 import HomePage from "./pages/home";
 import ThankYouPage from "./pages/thank-you";
+import UsersPage from "./pages/users";
 import { CookiesProvider, useCookies } from "react-cookie";
 import Navbar from "./components/Navbar";
 import { Toaster } from "sonner";
@@ -49,6 +50,7 @@ function Shell() {
           </Route>
           <Route element={<RequireAdmin />}>
             <Route path="/monitoring" element={<MonitoringPage />} />
+            <Route path="/users" element={<UsersPage />} />
           </Route>
         </Route>
       </Routes>

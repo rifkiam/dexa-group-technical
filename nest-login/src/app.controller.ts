@@ -4,10 +4,16 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Delete,
+  Param,
   Post,
+  Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AppService } from './app.service.js';
-import { RegisterDto, LoginDto } from './dto/auth.dto.js';
+import { CreateUserDto, LoginDto, RegisterDto, UpdateUserDto } from './dto/auth.dto.js';
+import { AdminGuard, getAdminId, type AdminRequest } from './auth/admin.guard.js';
 
 @Controller()
 export class AppController {
@@ -27,5 +33,29 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   login(@Body() body: LoginDto) {
     return this.appService.login(body);
+  }
+
+  @Get('users')
+  @UseGuards(AdminGuard)
+  listUsers() {
+    return this.appService.listUsers();
+  }
+
+  @Post('users')
+  @UseGuards(AdminGuard)
+  createUser(@Body() body: CreateUserDto) {
+    return this.appService.createUser(body);
+  }
+
+  @Put('users/:id')
+  @UseGuards(AdminGuard)
+  updateUser(@Param('id') id: string, @Body() body: UpdateUserDto, @Req() req: AdminRequest) {
+    return this.appService.updateUser(id, body, getAdminId(req));
+  }
+
+  @Delete('users/:id')
+  @UseGuards(AdminGuard)
+  deleteUser(@Param('id') id: string, @Req() req: AdminRequest) {
+    return this.appService.deleteUser(id, getAdminId(req));
   }
 }

@@ -6,6 +6,19 @@ export type User = {
     employeeId: string;
 }
 
+export type ManagedUser = User & {
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type UserFormData = {
+    name: string;
+    email: string;
+    employeeId: string;
+    role: 'user' | 'admin';
+    password?: string;
+}
+
 export type AuthResponse = {
     user: User;
     accessToken: string;

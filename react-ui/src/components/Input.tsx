@@ -1,27 +1,22 @@
-import type { HTMLInputTypeAttribute } from "react";
+import type { InputHTMLAttributes } from 'react';
 
-interface InputProps {
+type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'name' | 'type'> & {
   label: string;
   name: string;
-  type?: HTMLInputTypeAttribute;
-  accept?: string;
-  placeholder?: string;
-  required?: boolean;
-  value?: string;
-}
+  type?: InputHTMLAttributes<HTMLInputElement>['type'];
+};
 
-export default function Input({ label, name, type = "text", accept, placeholder = "", required = false, value }: InputProps) {
+export default function Input({ label, name, type = 'text', className = '', ...inputProps }: InputProps) {
   return (
-    <div className="flex flex-col text-left gap-1">
+    <div className="flex flex-col gap-1 text-left">
       <label htmlFor={name}>{label}</label>
       <input
-        type={type}
+        {...inputProps}
+        id={name}
         name={name}
-        placeholder={placeholder}
-        className="w-full p-2 border border-gray-700 rounded-md"
-        required={required}
-        accept={accept}
-        value={value} />
+        type={type}
+        className={`w-full rounded-md border border-gray-700 px-3 py-2 ${inputProps.disabled ? 'cursor-not-allowed bg-gray-200 text-gray-500' : 'bg-transparent'} ${className}`}
+      />
     </div>
   );
 }

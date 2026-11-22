@@ -6,12 +6,14 @@ import { AppService } from './app.service.js';
 import { PrismaModule } from './database/prisma.module.js';
 import { ResponseExceptionFilter } from './common/response-exception.filter.js';
 import { ResponseInterceptor } from './common/response.interceptor.js';
+import { AdminGuard } from './auth/admin.guard.js';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule],
   controllers: [AppController],
   providers: [
     AppService,
+    AdminGuard,
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     { provide: APP_FILTER, useClass: ResponseExceptionFilter },
   ],
