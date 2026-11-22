@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateAttendanceDto {
     @ApiProperty({
@@ -17,14 +17,14 @@ export class PaginationDto {
         example: 1,
     })
     @IsNumber()
-    @IsNotEmpty()
-    page: number;
+    @IsOptional()
+    page?: number;
 
     @ApiProperty({
         description: 'The limit of the page',
         example: 10,
     })
     @IsNumber()
-    @IsNotEmpty()
-    limit: number;
+    @IsOptional()
+    limit?: number;
 }

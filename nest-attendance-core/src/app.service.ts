@@ -1,13 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from './database/prisma.service.js';
-import { CreateAttendanceDto } from './dto/attendance.dto.js';
+import { CreateAttendanceDto, PaginationDto } from './dto/attendance.dto.js';
 import { uploadObject } from './lib/s3.js';
-
-type Pagination = {
-  page: number;
-  limit: number;
-}
 
 @Injectable()
 export class AppService {
@@ -38,7 +33,7 @@ export class AppService {
     return { imageKey };
   }
 
-  async getAttendanceList(pagination?: Pagination) {
+  async getAttendanceList(pagination?: PaginationDto) {
     const { page = 1, limit = 10 } = pagination ?? {};
     const skip = (page - 1) * limit;
     const take = limit;

@@ -11,3 +11,20 @@ export type AuthResponse = {
     accessToken: string;
     expiresIn: number;
 }
+
+export type Attendance = {
+    id: string;
+    userId: string;
+    email: string;
+    employeeId: string;
+    imageKey: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type AttendanceListResponse = {
+    data: Attendance[];
+    total: number;
+    page: number;
+    limit: number;
+}

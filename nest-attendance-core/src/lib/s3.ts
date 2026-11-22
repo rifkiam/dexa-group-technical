@@ -29,15 +29,3 @@ export async function uploadObject(
 
   return key;
 }
-
-export function isStoredObjectKey(key: string) {
-  const normalized = key.replace(/^\/+/, '');
-  return normalized.startsWith(bucket);
-}
-
-export function getPublicObjectUrl(key: string) {
-  if (!isStoredObjectKey(key)) {
-    throw new Error('Invalid object key');
-  }
-  return `${process.env.S3_PUBLIC_URL ?? ''}/${key}`;
-}

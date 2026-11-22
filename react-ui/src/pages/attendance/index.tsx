@@ -127,7 +127,15 @@ export default function AttendancePage() {
 
     setUploadState("uploading");
     const uploadPromise = uploadAttendancePhoto(file, token)
-      .then(({ imageKey }) => {
+      .then((res) => {
+        if (res.statusCode < 200 || res.statusCode >= 300 || !res.data) {
+          toast.error(res.message ?? 'Photo upload failed');
+        }
+        const imageKey = res.data?.imageKey;
+        if (!imageKey) {
+          toast.error('Photo upload failed');
+          throw new Error('Photo upload failed');
+        }
         if (generation === uploadGenerationRef.current) setUploadState("uploaded");
         return imageKey;
       })
@@ -172,9 +180,17 @@ export default function AttendancePage() {
     setSubmitting(true);
     try {
       const imageKey = await uploadPromiseRef.current;
+
       if (!imageKey) throw new Error(uploadError ?? "Photo upload has not completed.");
-      await createAttendance(imageKey, token);
+
+      const res = await createAttendance(imageKey, token);
+      if (res.statusCode < 200 || res.statusCode >= 300 || !res.data) {
+        toast.error(res.message ?? 'Attendance submission failed');
+        throw new Error(res.message ?? 'Attendance submission failed');
+      }
+
       toast.success("Attendance submitted successfully.");
+
       setSelectedPhoto(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
