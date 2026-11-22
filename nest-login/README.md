@@ -57,6 +57,16 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+## Seed demo users
+
+After applying the database migrations, run:
+
+```bash
+pnpm run db:seed
+```
+
+The seeder creates or updates five demo users. They all use `Password123!` by default; set `SEED_USER_PASSWORD` to choose another password before running it. The demo accounts are `admin@example.com`, `alice@example.com`, `bob@example.com`, `carol@example.com`, and `david@example.com`. The seeder is safe to rerun and stores passwords using the same scrypt format as the login flow.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

@@ -1,15 +1,19 @@
+import type { HTMLInputTypeAttribute } from "react";
+
 interface InputProps {
   label: string;
   name: string;
-  type: string;
+  type?: HTMLInputTypeAttribute;
+  accept?: string;
   placeholder?: string;
+  required?: boolean;
 }
 
-export default function Input({ label, name, type, placeholder = "" }: InputProps) {
+export default function Input({ label, name, type = "text", accept, placeholder = "", required = false }: InputProps) {
   return (
-    <div>
+    <div className="flex flex-col text-left">
       <label htmlFor={name}>{label}</label>
-      <input type={type} name={name} placeholder={placeholder} className="w-full p-2 border border-gray-300 rounded-md" />
+      <input type={type} name={name} placeholder={placeholder} className="w-full p-2 border border-gray-700 rounded-md" required={required} accept={accept} />
     </div>
   );
 }

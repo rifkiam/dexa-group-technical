@@ -1,43 +1,77 @@
 import {
   BrowserRouter,
+  Navigate,
+  Outlet,
   Route,
   Routes,
   useLocation,
-  useNavigate,
 } from "react-router";
 import LoginPage from "./pages/login";
 import AttendancePage from "./pages/attendance";
 import MonitoringPage from "./pages/monitoring";
-
+import HomePage from "./pages/home";
+import { CookiesProvider } from "react-cookie";
+import Navbar from "./components/Navbar";
+import { Toaster } from "sonner";
+import { useCookies } from "react-cookie";
+import { decodeAccessToken } from "./lib/jwt";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Shell />
-    </BrowserRouter>
+    <CookiesProvider>
+      <BrowserRouter>
+        <Toaster position="top-right" className="text-left" duration={2000} />
+        <Shell />
+      </BrowserRouter>
+    </CookiesProvider>
   );
 }
 
 function Shell() {
-  const navigate = useNavigate();
   const { pathname } = useLocation();
+  const title = pathname.split('/')[1].charAt(0).toUpperCase() + pathname.split('/')[1].slice(1);
 
   return (
     <div className="flex flex-col gap-6 p-8">
+      <Navbar title={title || 'Home Page'} />
       <Routes>
         <Route
           path="/"
+          element={<HomePage />}
+        />
+        <Route
+          path="/login"
           element={<LoginPage />}
         />
-        <Route
-          path="/attendance"
-          element={<AttendancePage />}
-        />
-        <Route
-          path="/monitoring"
-          element={<MonitoringPage />}
-        />
+        <Route element={<RequireAuth />}>
+          <Route path="/attendance" element={<AttendancePage />} />
+          <Route element={<RequireAdmin />}>
+            <Route path="/monitoring" element={<MonitoringPage />} />
+          </Route>
+        </Route>
       </Routes>
     </div>
   );
+}
+
+function RequireAuth() {
+  const [cookies] = useCookies(['token', 'refreshToken']);
+  const user = decodeAccessToken(cookies.token);
+
+  if (!cookies.token || !cookies.refreshToken || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function RequireAdmin() {
+  const [cookies] = useCookies(['token']);
+  const user = decodeAccessToken(cookies.token);
+
+  if (user?.role !== 'admin') {
+    return <Navigate to="/attendance" replace />;
+  }
+
+  return <Outlet />;
 }
