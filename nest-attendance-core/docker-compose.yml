@@ -12,7 +12,7 @@ services:
       - attendance_mysql_data:/var/lib/mysql
 
   minio:
-    image: pgsty/minio:latest
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     ports:
       - 9000:9000
       - 9001:9001
@@ -24,7 +24,7 @@ services:
     command: server /data --console-address ":9001"
 
   minio-init:
-    image: minio/mc:RELEASE.2025-08-13T08-35-41Z-cpuv1
+    image: pgsty/mc:RELEASE.2026-11-12T00-00-00Z
     restart: "no"
     depends_on:
       - minio
