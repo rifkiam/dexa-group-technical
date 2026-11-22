@@ -102,3 +102,11 @@ export async function getAttendanceList(token: string) {
     });
     return res;
 }
+
+export async function getTodaysAttendance(token: string) {
+    const res =await backendApi.Get<Response<{ hasCheckedIn: boolean }>>('/attendance/today', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return res;
+}

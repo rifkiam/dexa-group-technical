@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import Button from "./Button";
 
 type ImagePreviewModalProps = {
   imageUrl: string | null;
-  imageKey: string;
   onClose: () => void;
 };
 
-export default function ImagePreviewModal({ imageUrl, imageKey, onClose }: ImagePreviewModalProps) {
+export default function ImagePreviewModal({ imageUrl, onClose }: ImagePreviewModalProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const [imageLoading, setImageLoading] = useState(Boolean(imageUrl));
 

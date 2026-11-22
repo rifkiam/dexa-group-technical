@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from './database/prisma.service.js';
 import { CreateAttendanceDto, PaginationDto } from './dto/attendance.dto.js';
@@ -68,8 +68,26 @@ export class AppService {
     return attendance;
   }
 
+  async getTodaysAttendance(userId: string) {
+    const { start, end } = getJakartaDayBounds(new Date());
+    const attendance = await this.prisma.attendance.findFirst({
+      where: { userId, createdAt: { gte: start, lt: end } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { hasCheckedIn: Boolean(attendance), attendance };
+  }
+
   async createAttendance(userId: string, email: string, employeeId: string, payload: CreateAttendanceDto) {
     const date = new Date();
+    const { start, end } = getJakartaDayBounds(date);
+    const existing = await this.prisma.attendance.findFirst({
+      where: { userId, createdAt: { gte: start, lt: end } },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictException('You have already recorded attendance today.');
+    }
+
     const attendance = await this.prisma.attendance.create({
       data: {
         userId,
@@ -81,4 +99,16 @@ export class AppService {
     });
     return attendance;
   }
+}
+
+function getJakartaDayBounds(date: Date) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((value) => value.type === type)!.value;
+  const startUtc = Date.UTC(Number(part('year')), Number(part('month')) - 1, Number(part('day'))) - 7 * 60 * 60 * 1000;
+  return { start: new Date(startUtc), end: new Date(startUtc + 24 * 60 * 60 * 1000) };
 }

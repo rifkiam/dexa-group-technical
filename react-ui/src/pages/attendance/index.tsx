@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 import Button from "../../components/Button";
-import { createAttendance, uploadAttendancePhoto } from "../../api/api";
+import { createAttendance, getTodaysAttendance, uploadAttendancePhoto } from "../../api/api";
 
 export default function AttendancePage() {
   const [now, setNow] = useState(new Date());
@@ -14,12 +15,42 @@ export default function AttendancePage() {
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "uploaded" | "error">("idle");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [checkingAttendance, setCheckingAttendance] = useState(true);
+  const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false);
+  const [attendanceCheckError, setAttendanceCheckError] = useState<string | null>(null);
   const [cookies] = useCookies(["token"]);
+  const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadPromiseRef = useRef<Promise<string> | null>(null);
   const uploadGenerationRef = useRef(0);
+
+  useEffect(() => {
+    let active = true;
+    const token = cookies.token;
+    if (!token) {
+      setAttendanceCheckError('Your session has expired. Sign in again.');
+      setCheckingAttendance(false);
+      return () => { active = false; };
+    }
+
+    getTodaysAttendance(token)
+      .then((response) => {
+        if (response.statusCode < 200 || response.statusCode >= 300 || !response.data) {
+          throw new Error(response.message ?? 'Could not check today’s attendance.');
+        }
+        if (active) {
+          setAlreadyCheckedIn(response.data.hasCheckedIn);
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setAttendanceCheckError(error instanceof Error ? error.message : 'Could not check today’s attendance.');
+      })
+      .finally(() => { if (active) setCheckingAttendance(false); });
+
+    return () => { active = false; };
+  }, [cookies.token, navigate]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -171,6 +202,13 @@ export default function AttendancePage() {
       toast.error("Capture or choose a photo before submitting attendance.");
       return;
     }
+    if (alreadyCheckedIn) {
+      return;
+    }
+    if (checkingAttendance || attendanceCheckError) {
+      toast.error(attendanceCheckError ?? 'Checking today’s attendance. Please wait.');
+      return;
+    }
     const token = cookies.token;
     if (!token) {
       toast.error("Your session has expired. Sign in again.");
@@ -193,8 +231,14 @@ export default function AttendancePage() {
 
       setSelectedPhoto(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      navigate('/thank-you', { replace: true });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not submit attendance.");
+      const message = error instanceof Error ? error.message : "Could not submit attendance.";
+      if (message.toLowerCase().includes('already') && message.toLowerCase().includes('attendance')) {
+        setAlreadyCheckedIn(true);
+      } else {
+        toast.error(message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -202,12 +246,19 @@ export default function AttendancePage() {
 
   return (
     <div className="mx-auto w-full max-w-md rounded-xl border border-gray-700 p-4">
+      {checkingAttendance ? (
+        <p role="status" className="py-8 text-center text-gray-600">Checking today’s attendance…</p>
+      ) : attendanceCheckError ? (
+        <p role="alert" className="rounded-md bg-red-50 p-4 text-sm text-red-800">{attendanceCheckError}</p>
+      ) : alreadyCheckedIn ? (
+        <p className="py-8 text-center text-gray-700">You have submitted your attendance record today</p>
+      ) : <>
       <p className="mb-4 text-center text-2xl font-bold">WFH Attendance Form</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <label htmlFor="time">Time</label>
           <p id="time" className="w-full rounded-md border border-gray-700 p-2 text-sm text-gray-500">
-            {now.toLocaleString()}
+            {now.toLocaleString().replaceAll('.', ':')}
           </p>
         </div>
 
@@ -245,10 +296,12 @@ export default function AttendancePage() {
                 <Button type="button" variant="secondary" onClick={stopCamera}>Cancel</Button>
               </div>
             </>
-          ) : (
+          ) : !photoUrl ? (
             <Button type="button" onClick={openCamera} disabled={cameraBusy}>
               {cameraBusy ? "Opening camera…" : "Capture photo"}
             </Button>
+          ) : (
+            null
           )}
 
           <input
@@ -268,10 +321,11 @@ export default function AttendancePage() {
           )}
         </div>
 
-        <Button type="submit" className="mt-5" disabled={submitting || uploadState === "uploading" || uploadState === "error"}>
+        <Button type="submit" className="mt-5" disabled={submitting || checkingAttendance || uploadState === "uploading" || uploadState === "error"}>
           {submitting ? "Submitting…" : "Submit attendance"}
         </Button>
       </form>
+      </>}
     </div>
   );
 }

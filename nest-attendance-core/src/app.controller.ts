@@ -23,6 +23,16 @@ export class AppController {
     return this.appService.getAttendanceList(query);
   }
 
+  @Get('attendance/today')
+  @UseGuards(AuthGuard)
+  getTodaysAttendance(@Req() req: AuthenticatedRequest) {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    return this.appService.getTodaysAttendance(user.id);
+  }
+
   @Get('attendance/:id')
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)

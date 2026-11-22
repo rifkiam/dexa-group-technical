@@ -10,6 +10,7 @@ import LoginPage from "./pages/login";
 import AttendancePage from "./pages/attendance";
 import MonitoringPage from "./pages/monitoring";
 import HomePage from "./pages/home";
+import ThankYouPage from "./pages/thank-you";
 import { CookiesProvider, useCookies } from "react-cookie";
 import Navbar from "./components/Navbar";
 import { Toaster } from "sonner";
@@ -31,7 +32,7 @@ function Shell() {
   const title = pathname.split('/')[1].charAt(0).toUpperCase() + pathname.split('/')[1].slice(1);
 
   return (
-    <div className="flex flex-col gap-6 p-8">
+    <div className="flex flex-col gap-6 p-4 sm:p-8">
       <Navbar title={title || 'Home Page'} />
       <Routes>
         <Route
@@ -44,6 +45,7 @@ function Shell() {
         <Route element={<RequireAuth />}>
           <Route element={<RequireEmployee />}>
             <Route path="/attendance" element={<AttendancePage />} />
+            <Route path="/thank-you" element={<ThankYouPage />} />
           </Route>
           <Route element={<RequireAdmin />}>
             <Route path="/monitoring" element={<MonitoringPage />} />

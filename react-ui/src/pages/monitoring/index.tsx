@@ -120,7 +120,6 @@ export default function MonitoringPage() {
       {selectedAttendance && (
         <ImagePreviewModal
           imageUrl={imageUrl}
-          imageKey={selectedAttendance.imageKey}
           onClose={closeImage}
         />
       )}
