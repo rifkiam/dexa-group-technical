@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AppService } from './app.service.js';
-import { CreateUserDto, LoginDto, RegisterDto, UpdateUserDto } from './dto/auth.dto.js';
+import { CreateUserDto, LoginDto, UpdateUserDto } from './dto/auth.dto.js';
 import { AdminGuard, getAdminId, type AdminRequest } from './auth/admin.guard.js';
 
 @Controller()
@@ -22,11 +22,6 @@ export class AppController {
   @Get()
   getHello(): string {
     return "Welcome to the login API";
-  }
-
-  @Post('register')
-  register(@Body() body: RegisterDto) {
-    return this.appService.register(body);
   }
 
   @Post('login')

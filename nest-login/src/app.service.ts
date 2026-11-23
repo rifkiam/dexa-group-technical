@@ -10,7 +10,7 @@ import { Prisma } from './generated/prisma/client.js';
 import { hashPassword, verifyPassword } from './auth/password.js';
 import { ACCESS_TOKEN_TTL_SECONDS, signAccessToken } from './auth/token.js';
 import { PrismaService } from './database/prisma.service.js';
-import { CreateUserDto, LoginDto, RegisterDto, UpdateUserDto } from './dto/auth.dto.js';
+import { CreateUserDto, LoginDto, UpdateUserDto } from './dto/auth.dto.js';
 
 type PublicUser = {
   id: string;
@@ -31,29 +31,6 @@ export class AppService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
   ) {}
-
-  async register(body: RegisterDto) {
-    const email = body.email.toLowerCase();
-    try {
-      const user = await this.prisma.user.create({
-        data: {
-          name: body.name,
-          email,
-          employeeId: body.employeeId,
-          password: await hashPassword(body.password),
-        },
-      });
-      return this.authenticated(user);
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ConflictException('Email already registered');
-      }
-      throw error;
-    }
-  }
 
   async login(body: LoginDto) {
     const email = body.email.toLowerCase();

@@ -42,17 +42,6 @@ export async function login(email: string, password: string) {
     return res;
 }
 
-export async function register(name: string, email: string, password: string, employeeId: string) {
-    const res = await authApi.Post<Response<AuthResponse>>('/register', {
-        name,
-        email,
-        employeeId,
-        password,
-    });
-    return res;
-}
-
-
 // Attendance requests
 function readFileAsBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
